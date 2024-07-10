@@ -93,18 +93,18 @@ We optimize the motor under 2 conditions:
 '''
 
 # region setting up inputs/parameters
-D_i = 0.11
-L = 0.08
+D_i = 304.8e-3
+L = 165.1e-3
 
 # Data for max operating condition
-max_rotor_torque = 400.
-max_rotor_RPM = 5000.
+max_rotor_torque = 1200
+max_rotor_RPM = 1193.7
 
 # Data for nominal operating condition
-nominal_rotor_torque = 172.317
-nominal_rotor_RPM = 3375.10
+nominal_rotor_torque = 286
+nominal_rotor_RPM = 4000
 
-gear_ratio = 4.
+gear_ratio = 1.
 # endregion
 
 # region motor model
@@ -129,13 +129,13 @@ sim['motor_length'] = L
 sim.run()
 
 # optimization
-from modopt.csdl_library import CSDLProblem
-from modopt.scipy_library import SLSQP
-prob = CSDLProblem(problem_name='motor_opt_test', simulator=sim)
-optimizer = SLSQP(prob, maxiter=500, ftol=1E-5)
+# from modopt.csdl_library import CSDLProblem
+# from modopt.scipy_library import SLSQP
+# prob = CSDLProblem(problem_name='motor_opt_test', simulator=sim)
+# optimizer = SLSQP(prob, maxiter=500, ftol=1E-5)
 
-optimizer.solve()
-optimizer.print_results()
+# optimizer.solve()
+# optimizer.print_results()
 
 # printing relevant outputs
 print('Optimized diameter (m): ', sim['motor_diameter'])
@@ -146,5 +146,6 @@ print('Max torque delta for optimized motor ((Nm)/(Nm)): ', sim['max_torque_delt
 print('Nominal input power (kW): ', sim['input_power'][0] / 1000.)
 print('Maximum input power (kW): ', sim['input_power'][1] / 1000.)
 
+print('Maximum allowed torque: ', sim['T_upper_lim_curve'][0])
 
 # add print statements to clearly identify outputs (torque delta, power, etc.)
