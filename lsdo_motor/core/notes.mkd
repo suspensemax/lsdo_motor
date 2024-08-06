@@ -1,0 +1,17 @@
+API NOTES:
+- Create classes for sizing and analysis
+- both should have an evaluate method 
+- inputs at the Class level:
+    - discrete motor parameters
+        - pole pairs, phases, etc.
+        - power or torque density, A_bar, etc.
+    - material models
+    - gear ratio
+- inputs at the method level:
+    - operating variables
+        - SIZING: mass, omega
+        - ANALYSIS: omega, L, D
+    - operating parameters:
+        - SIZING: 
+        - ANALYSIS: RPM, 
+        

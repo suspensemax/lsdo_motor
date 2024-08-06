@@ -4,8 +4,8 @@ from csdl import Model, NewtonSolver, ScipyKrylov
 import csdl
 from python_csdl_backend import Simulator
 
-from lsdo_motor.core.motor_submodels.TC1_flux_weakening_model import FluxWeakeningModel
-from lsdo_motor.core.motor_submodels.TC1_mtpa_model import MTPAModel
+from lsdo_motor.core.old.motor_submodels.TC1_flux_weakening_model import FluxWeakeningModel
+from lsdo_motor.core.old.motor_submodels.TC1_mtpa_model import MTPAModel
 
 class EMTorqueImplicitModel(Model):
     def initialize(self):

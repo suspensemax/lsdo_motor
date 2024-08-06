@@ -3,13 +3,13 @@ from csdl import Model, ScipyKrylov, NewtonSolver
 from python_csdl_backend import Simulator
 import csdl
 
-from lsdo_motor.core.motor_submodels.TC1_magnet_mec_model import MagnetMECModel
-from lsdo_motor.core.motor_submodels.TC1_inductance_mec_model import InductanceModel
-from lsdo_motor.core.motor_submodels.TC1_torque_limit_model import TorqueLimitModel
-from lsdo_motor.core.motor_submodels.TC1_implicit_em_torque_model import EMTorqueModel
-from lsdo_motor.core.motor_submodels.TC1_flux_weakening_model import FluxWeakeningModel, FluxWeakeningBracketModel
-from lsdo_motor.core.motor_submodels.TC1_mtpa_model import MTPAModel
-from lsdo_motor.core.motor_submodels.TC1_post_processing_model import PostProcessingModel
+from lsdo_motor.core.old.motor_submodels.TC1_magnet_mec_model import MagnetMECModel
+from lsdo_motor.core.old.motor_submodels.TC1_inductance_mec_model import InductanceModel
+from lsdo_motor.core.old.motor_submodels.TC1_torque_limit_model import TorqueLimitModel
+from lsdo_motor.core.old.motor_submodels.TC1_implicit_em_torque_model import EMTorqueModel
+from lsdo_motor.core.old.motor_submodels.TC1_flux_weakening_model import FluxWeakeningModel, FluxWeakeningBracketModel
+from lsdo_motor.core.old.motor_submodels.TC1_mtpa_model import MTPAModel
+from lsdo_motor.core.old.motor_submodels.TC1_post_processing_model import PostProcessingModel
 
 
 '''
