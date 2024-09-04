@@ -89,6 +89,17 @@ class DiscreteCheck(csdl.CustomExplicitOperation):
         lower_bracket = self.create_output('lower_bracket', (self.num_nodes,))
         upper_bracket = self.create_output('upper_bracket', (self.num_nodes,))
 
+        input_names_list = ['A', 'B', 'C', 'D', 'E']
+        output_names_list = ['lower_bracket', 'upper_bracket']
+
+        for i_name in input_names_list:
+            for o_name in output_names_list:
+                self.declare_derivative_parameters(
+                    o_name,
+                    i_name,
+                    dependent=False
+                )
+
         outputs = csdl.VariableGroup()
         outputs.lower_bracket = lower_bracket
         outputs.upper_bracket = upper_bracket
@@ -191,6 +202,16 @@ class DiscreteCheck(csdl.CustomExplicitOperation):
         output_vals['upper_bracket'] = upper_bracket_array
 
     
-    def compute_derivatives(self, inputs, outputs, derivatives):
-        return super().compute_derivatives(inputs, outputs, derivatives)
-    
+    def compute_derivatives(self, input_vals, output_vals, derivatives):
+        A = input_vals['A']
+        B = input_vals['B']
+        C = input_vals['C']
+        D = input_vals['D']
+        E = input_vals['E']
+
+        input_names_list = ['A', 'B', 'C', 'D', 'E']
+        output_names_list = ['lower_bracket', 'upper_bracket']
+
+        for i_name in input_names_list:
+            for o_name in output_names_list:
+                derivatives[o_name, i_name] = csdl.Variable(value=0.)
