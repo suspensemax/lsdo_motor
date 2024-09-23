@@ -10,17 +10,19 @@ from lsdo_motor.core.submodels.em_torque_model import em_torque_model
 from typing import Literal
 mode_types = Literal['input_load', 'efficiency_map']
 
-def motor_analysis_model(sizing_inputs, motor_inputs, parameters, fit_coeff_dep_H, fit_coeff_dep_B,  
+def motor_analysis_model(sizing_inputs, ecm_inputs, motor_inputs, parameters, fit_coeff_dep_H, fit_coeff_dep_B,  
                          mode: mode_types='input_load', mtpa=True, flux_weakening=False):
 
     # region inputs
-    outer_stator_radius = sizing_inputs.outer_stator_radius
+    L = sizing_inputs.L
+    D = sizing_inputs.D
     D_i = sizing_inputs.D_i
+    D_shaft = sizing_inputs.D_shaft
     pole_pitch = sizing_inputs.pole_pitch
     tooth_pitch = sizing_inputs.tooth_pitch
     air_gap_depth = sizing_inputs.air_gap_depth
-    l_ef = sizing_inputs.l_ef
-    rotor_radius = sizing_inputs.rotor_radius
+    # l_ef = sizing_inputs.l_ef
+    rotor_diameter = sizing_inputs.rotor_diameter
     turns_per_phase = sizing_inputs.turns_per_phase
     Acu = sizing_inputs.Acu
     tooth_width = sizing_inputs.tooth_width
@@ -28,19 +30,23 @@ def motor_analysis_model(sizing_inputs, motor_inputs, parameters, fit_coeff_dep_
     b_sb = sizing_inputs.b_sb
     h_slot = sizing_inputs.h_slot
     b_s1 = sizing_inputs.b_s1
-    Tau_y = sizing_inputs.Tau_y
-    L_j1 = sizing_inputs.L_j1
-    Kdp1 = sizing_inputs.Kdp1
-    bm = sizing_inputs.bm
-    Am_r = sizing_inputs.Am_r
-    phi_r = sizing_inputs.phi_r
-    lambda_m = sizing_inputs.lambda_m
-    alpha_i = sizing_inputs.alpha_i
-    Kf = sizing_inputs.Kf
-    K_phi = sizing_inputs.K_phi
-    K_theta = sizing_inputs.K_theta
-    A_f2 = sizing_inputs.A_f2
-    Rdc = sizing_inputs.Rdc
+    hm = sizing_inputs.magnet_thickness
+    
+    Tau_y = ecm_inputs.Tau_y
+    L_j1 = ecm_inputs.L_j1
+    Kdp1 = ecm_inputs.Kdp1
+    bm = ecm_inputs.bm
+    Am_r = ecm_inputs.Am_r
+    phi_r = ecm_inputs.phi_r
+    lambda_m = ecm_inputs.lambda_m
+    alpha_i = ecm_inputs.alpha_i
+    Kf = ecm_inputs.Kf
+    K_phi = ecm_inputs.K_phi
+    K_theta = ecm_inputs.K_theta
+    A_f2 = ecm_inputs.A_f2
+    Rdc = ecm_inputs.Rdc
+
+    l_ef = L
 
     num_nodes = parameters['num_nodes']
     V_lim = parameters['V_lim']
@@ -69,6 +75,7 @@ def motor_analysis_model(sizing_inputs, motor_inputs, parameters, fit_coeff_dep_
         'phi_r': phi_r,
         'lambda_m': lambda_m,
         'Am_r': Am_r,
+        'hm': hm
     }
     magnet_mec_outputs = magnet_mec_model(
         num_nodes=num_nodes,
@@ -104,6 +111,7 @@ def motor_analysis_model(sizing_inputs, motor_inputs, parameters, fit_coeff_dep_
         'lambda_leak_standard': magnet_mec_outputs['lambda_leak_standard'],
         'Am_r': Am_r,
         'K_phi': K_phi,
+        'hm': hm
     }
     inductance_outputs = inductance_model(
         inputs=inductance_inputs,
@@ -165,11 +173,13 @@ def motor_analysis_model(sizing_inputs, motor_inputs, parameters, fit_coeff_dep_
         'D_i': D_i,
         'B_delta': magnet_mec_outputs['B_delta'],
         'l_ef': l_ef,
-        'outer_stator_radius': outer_stator_radius,
-        'rotor_radius': rotor_radius,
+        'outer_stator_diameter': D,
+        'rotor_diameter': rotor_diameter,
         'bm': bm,
         'Acu': Acu,
         'upper_T_lim': T_lim,
+        'hm': hm,
+        'shaft_diameter': D_shaft
     }
     em_torque_parameters = {}
     em_torque_mode = mode

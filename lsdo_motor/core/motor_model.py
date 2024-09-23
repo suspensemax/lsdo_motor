@@ -4,13 +4,40 @@ from dataclasses import dataclass
 from csdl_alpha.utils.typing import VariableLike
 
 from lsdo_motor.core.motor_sizing_model import motor_sizing_model
+from lsdo_motor.core.motor_ecm_parameters_model import motor_ecm_parameters_model
 from lsdo_motor.core.motor_analysis_model import motor_analysis_model
 
+# motor inputs
 @dataclass
 class MotorInputVariableGroup(csdl.VariableGroup):
     rotor_rpm: VariableLike
     rotor_torque: VariableLike
 
+# custom sizing inputs
+@dataclass
+class CustomSizingVariableGroup(csdl.VariableGroup): 
+    # NOTE: UPDATE LIST TO ONLY ACCOUNT FOR HIGH-LEVEL GEOMETRY
+    L: VariableLike # motor length (m)
+    D: VariableLike # outer diameter (m)
+    mass: VariableLike # mass (kg)
+    peak_torque: VariableLike # max torque (Nm)
+    D_i: VariableLike # # inner stator diameter (m)
+    D_shaft: VariableLike # shaft diameter (m)
+    pole_pitch: VariableLike # arc length of one magnet pole on the rotor surface (m)
+    tooth_pitch: VariableLike # arc length of one tooth on the rotor surface (m)
+    air_gap_depth: VariableLike # air gap size (m)
+    rotor_diameter: VariableLike # rotor diameter
+    turns_per_phase: VariableLike # turns per stator slot
+    tooth_width: VariableLike # stator tooth arc length
+    h_ys: VariableLike # stator yoke thickness (m) -> hj1 in diagram
+    b_sb: VariableLike # width of slot opening between two teeth (m)
+    h_slot: VariableLike # height of slot (m)
+    b_s1: VariableLike # max thickness of slot (m)
+    magnet_thickness: VariableLike # magnet thickness (m)
+    magnet_embed_depth: VariableLike # magnet embedded depth 
+    Acu: VariableLike # cross-sectional area of coils in stator windings (m^2)
+
+# motor outputs
 @dataclass
 class MotorOutputVariableGroup(csdl.VariableGroup):
     efficiency: csdl.Variable
@@ -54,6 +81,7 @@ class MotorModel():
     def evaluate(
             self,
             motor_inputs: MotorInputVariableGroup,
+            custom_sizing_var_group=False, 
             L_0: VariableLike=0.05,
             L_D=0.5,
             torque_delta=0.1,
@@ -97,29 +125,37 @@ class MotorModel():
             L = L_0
         else:
             L = csdl.Variable(value=L_0, shape=(num_nodes,))
-        # L.print_on_update('L_state')
-
-        
 
         motor_omega = rotor_rpm*2*np.pi/60.*self.gear_ratio
 
-        motor_sizing_variable_group = motor_sizing_model(
-            L=L,
-            parameters=parameters,
-            omega=motor_omega,
-            sizing_mode=sizing_mode,
-            torque_density=torque_density,
-            power_density=power_density,
-            A_bar=self.A_bar,
-            B_bar=self.B_bar,
-            L_D=L_D,
-        )
+        if custom_sizing_var_group:
+            L = custom_sizing_var_group.L
+            motor_sizing_variable_group = custom_sizing_var_group
+
+        else: # using default sizing method
+            motor_sizing_variable_group = motor_sizing_model(
+                L=L,
+                parameters=parameters,
+                omega=motor_omega,
+                sizing_mode=sizing_mode,
+                torque_density=torque_density,
+                power_density=power_density,
+                A_bar=self.A_bar,
+                B_bar=self.B_bar,
+                L_D=L_D,
+            )
 
         mass = motor_sizing_variable_group.mass
         peak_torque = motor_sizing_variable_group.peak_torque
 
+        ecm_param_variable_group = motor_ecm_parameters_model(
+            parameters=parameters,
+            sizing_inputs=motor_sizing_variable_group,
+        )
+
         output_dict = motor_analysis_model(
             sizing_inputs=motor_sizing_variable_group,
+            ecm_inputs=ecm_param_variable_group,
             motor_inputs=motor_inputs,
             parameters=parameters,
             fit_coeff_dep_H=def_coeff_H,

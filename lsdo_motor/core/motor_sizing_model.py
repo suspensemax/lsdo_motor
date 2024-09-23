@@ -62,8 +62,7 @@ def motor_sizing_model(L, omega, parameters, sizing_mode='torque', torque_densit
     line_load = A_bar
 
     lambda_i = 1.25
-    outer_stator_radius = D
-    D_i = outer_stator_radius / lambda_i # finding inner_radius of stator
+    D_i = D / lambda_i # finding inner_radius of stator
 
     # --- POLE PITCH AND OTHER PITCHES ---
     pole_pitch = np.pi*D_i/(2*p)
@@ -71,9 +70,10 @@ def motor_sizing_model(L, omega, parameters, sizing_mode='torque', torque_densit
 
     # --- AIR GAP LENGTH ---
     air_gap_depth = 0.4*line_load*pole_pitch/(0.9e6*B_air_gap_max)
-    l_ef = L + 2*air_gap_depth # final effective length of motor
-    rotor_radius = D_i - 2*air_gap_depth # D2 in MATLAB code
-    D_shaft = 0.3 * rotor_radius # outer radius of shaft
+    # l_ef = L + 2*air_gap_depth # final effective length of motor
+    l_ef = L*1
+    rotor_diameter = D_i - 2*air_gap_depth # D2 in MATLAB code
+    D_shaft = 0.3 * rotor_diameter # outer radius of shaft
     
     # --- WINDINGS ---
     I_kw = I_w * eta_0 * PF
@@ -102,7 +102,7 @@ def motor_sizing_model(L, omega, parameters, sizing_mode='torque', torque_densit
     theta_sso = 0.5*theta_t
     theta_ssi = 0.3*theta_sso
     b_sb = theta_ssi*np.pi*D_i/360 # WIDTH OF BOTTOM OF SLOT
-    h_slot = (outer_stator_radius - D_i)/2 - h_ys # HEIGHT OF SLOT
+    h_slot = (D - D_i)/2 - h_ys # HEIGHT OF SLOT
 
     h_k = 0.0008 # NOT SURE HWAT THIS IS
     h_os = 1.5 * h_k # NOT SURE WHAT THIS IS
@@ -111,8 +111,7 @@ def motor_sizing_model(L, omega, parameters, sizing_mode='torque', torque_densit
     b_s2 = (np.pi*(D_i+2*h_slot))/36 - tooth_width # RADIALLY OUTER WIDTH OF SLOT
 
     Tau_y = np.pi*(D_i+h_slot) / (2*p)
-    L_j1 = np.pi*(outer_stator_radius-h_ys) / (4*p) # STATOR YOKE LENGTH FOR MAGNETIC CIRCUIT CALCULATION
-    A_slot = (b_s1+b_s2)*(h_slot-h_k-h_os)/2
+    L_j1 = np.pi*(D-h_ys) / (4*p) # STATOR YOKE LENGTH FOR MAGNETIC CIRCUIT CALCULATION
 
     # --- WINDING FACTOR ---
     Kp1 = csdl.sin(pole_pitch*90*np.pi/pole_pitch/180) # INTEGRAL WINDING
@@ -125,23 +124,17 @@ def motor_sizing_model(L, omega, parameters, sizing_mode='torque', torque_densit
     hm = 0.004 # MAGNET THICKNESS
     theta_p = 360/2/p # ANGULAR SWEEP OF POLE IN DEGREES
     theta_m = 0.78*theta_p
-    Dm = rotor_radius - 0.002
-    bm = Dm*np.pi*theta_m/360
+    magnet_embed_depth = 0.002
+    Dm = rotor_diameter - magnet_embed_depth
+    bm = Dm*np.pi*theta_m/360 
 
     T = 75 # assuming normal operating temp
     Br_20 = 1.2 # Br at 20 C
     alpha_Br = -0.12 # temperature coefficients
-    IL = 0 # revercible loss
-    Br = 1+(T-20)*alpha_Br/100*(1-IL/100)*Br_20
+    Br = 1+(T-20)*alpha_Br/100*Br_20
 
     Hc_20 = 907000; # coercivity
-    Hc = (1+(T-20)*alpha_Br/100)*(1- IL/100)*Hc_20
-    mu_r = Br/mu_0/Hc; # relative permeability
-
-    # Br = 1.2 # MAGNET REMANENCE
-    # Hc = 907000. # MAGNET COERCIVITY
-
-    mu_r = Br/(mu_0*Hc) # RELATIVE MAGNET PERMEABILITY
+    Hc = (1+(T-20)*alpha_Br/100)*Hc_20
 
     Am_r = bm*l_ef # RADIAL CROSS SECTIONAL AREA OF MAGNET
     rho_magnet = 7.6 # MAGNET DENSITY (g/cm^3)
@@ -160,8 +153,7 @@ def motor_sizing_model(L, omega, parameters, sizing_mode='torque', torque_densit
     K_theta2 = 1 # no rotor slot
 
     K_theta = K_theta1*K_theta2
-    l_f2 = hm
-    A_f2 = l_f2*l_ef
+    # A_f2 = hm*l_ef
 
     # --- RESISTANCE & MASS CALCULATION
     rho = 0.0217e-6 # RESISTIVITY ------ GET CLARIFICATION ON UNITS
@@ -171,38 +163,63 @@ def motor_sizing_model(L, omega, parameters, sizing_mode='torque', torque_densit
     Rdc = 2 * rho * turns_per_phase * l_coil / (Acu * N_p) # DC RESISTANCE
 
     msvg = csdl.VariableGroup()
-    msvg.outer_stator_radius = outer_stator_radius
+    msvg.L = L
+    msvg.D = D # outer diameter
+    msvg.mass = mass
+    msvg.peak_torque = peak_torque
     msvg.D_i = D_i
+    msvg.D_shaft = D_shaft
     msvg.pole_pitch = pole_pitch
     msvg.tooth_pitch = tooth_pitch
     msvg.air_gap_depth = air_gap_depth
-    msvg.l_ef = l_ef
-    msvg.rotor_radius = rotor_radius
+    # msvg.l_ef = l_ef
+    msvg.rotor_diameter = rotor_diameter
     msvg.turns_per_phase = turns_per_phase
-    msvg.Acu = Acu
     msvg.tooth_width = tooth_width
     msvg.h_ys = h_ys
     msvg.b_sb = b_sb
     msvg.h_slot = h_slot
     msvg.b_s1 = b_s1
-    msvg.Tau_y = Tau_y
-    msvg.L_j1 = L_j1
-    msvg.Kdp1 = Kdp1
-    msvg.bm = bm
-    msvg.Am_r = Am_r
-    msvg.phi_r = phi_r
-    msvg.lambda_m = lambda_m
-    msvg.alpha_i = alpha_i
-    msvg.Kf = Kf
-    msvg.K_phi = K_phi
-    msvg.K_theta = K_theta
-    msvg.A_f2 = A_f2
-    msvg.Rdc = Rdc
+    msvg.magnet_thickness = hm
+    msvg.magnet_embed_depth = magnet_embed_depth # magnet embedded depth
+    msvg.Acu = Acu
 
-    msvg.L = L
-    msvg.D = D
-    msvg.mass = mass
-    msvg.peak_torque = peak_torque
+    # print(L.value)
+    # print(D.value) # outer diameter
+    # print(mass.value)
+    # print(peak_torque.value)
+    # print(D_i.value)
+    # print(D_shaft.value)
+    # print(pole_pitch.value)
+    # print(tooth_pitch.value)
+    # print(air_gap_depth.value)
+    # print(rotor_diameter.value)
+    # print(turns_per_phase.value)
+    # print(tooth_width.value)
+    # print(h_ys.value)
+    # print(b_sb.value)
+    # print(h_slot.value)
+    # print(b_s1.value)
+    # print(hm)
+    # print(magnet_embed_depth) # magnet embedded depth
+    # print(Acu)
+    # exit()
+    
+
+    # msvg.Tau_y = Tau_y
+    # msvg.L_j1 = L_j1
+    # msvg.Kdp1 = Kdp1
+    # msvg.Am_r = Am_r
+    # msvg.phi_r = phi_r
+    # msvg.lambda_m = lambda_m
+    # msvg.alpha_i = alpha_i
+    # msvg.Kf = Kf
+    # msvg.K_phi = K_phi
+    # msvg.K_theta = K_theta
+    # msvg.A_f2 = A_f2
+    # msvg.Rdc = Rdc
+
+    
     # endregion
 
     return msvg

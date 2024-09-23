@@ -72,7 +72,7 @@ def em_torque_model(inputs, parameters, mode, mtpa=True, flux_weakening=False,):
     frequency = omega*p/60
 
     # copper loss
-    copper_loss = m*R*current_amplitude**2 # NEED TO CHECK IF THIS IS ELEMENT-WISE SQUARING
+    copper_loss = m*R*current_amplitude**2
 
     # eddy_loss
     a = 0.00055 # lamination thickness in m
@@ -81,11 +81,11 @@ def em_torque_model(inputs, parameters, mode, mtpa=True, flux_weakening=False,):
     D_i = inputs['D_i']
     B_delta = inputs['B_delta']
     l_ef = inputs['l_ef']
-    D1 = inputs['outer_stator_radius'] # outer_stator_radius
-    D2 = inputs['rotor_radius'] # rotor radius
-    D_shaft = 0.3 * D2
+    D1 = inputs['outer_stator_diameter'] # outer_stator_radius
+    D2 = inputs['rotor_diameter'] # rotor radius
+    D_shaft = inputs['shaft_diameter']
     bm = inputs['bm']
-    hm = 0.004 # magnet thickness
+    hm = inputs['hm'] # MAGNET THICKNESS
     Acu = inputs['Acu']
     # B_delta_expanded = csdl.expand(B_delta, (num_nodes,))
     B_delta_expanded = B_delta

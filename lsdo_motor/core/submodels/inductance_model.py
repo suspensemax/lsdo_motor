@@ -83,7 +83,7 @@ def inductance_model(inputs, fit_coeff_dep_B, num_nodes, p, m, Z, I_w_r, omega_r
     Kad = 1./Kf
     
     F_ad = 0.35*m*Kad*Kdp1*turns_per_phase*I_d_r/p
-    hm = 0.004 # MAGNET THICKNESS
+    hm = inputs['hm'] # MAGNET THICKNESS
     Hc = 847138 # MAGNET COERCIVITY
     K_sigma_air = inputs['K_sigma_air'] # COEFFICIENT OF LEAKAGE IN AIR GAP
 

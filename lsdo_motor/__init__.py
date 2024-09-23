@@ -10,7 +10,7 @@ from lsdo_motor.core.old.TC1_motor_analysis_model import TC1MotorAnalysisModel
 from lsdo_motor.core.old.TC1_motor_sizing_model import TC1MotorSizingModel
 from lsdo_motor.core.old.TC1_full_motor_model import FullMotorModel
 
-from lsdo_motor.core.motor_model import MotorModel, MotorInputVariableGroup
+from lsdo_motor.core.motor_model import MotorModel, MotorInputVariableGroup, CustomSizingVariableGroup
 
 from pathlib import Path
 ROOT = Path(__file__).parents[0]

@@ -40,7 +40,7 @@ def magnet_mec_model(num_nodes, inputs, fit_coeff_dep_H, fit_coeff_dep_B):
     F_total = F_t + F_y + F_delta
 
     ''' --- MAGNETIC BRIDGE CALCULATIONS --- '''
-    hm = 0.004 # MAGNET THICKNESS
+    hm = inputs['hm']
     H_f = F_total / hm
     B_f = fit_dep_H(H_f, fit_coeff_dep_H[0])
 
